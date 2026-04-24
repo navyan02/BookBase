@@ -40,13 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_book'])) {
                                 }
                         }
 
-<<<<<<< Updated upstream
                         header('Location: index.php?deleted=1');
                         exit;
-=======
-            header('Location: index.php?deleted=1');
-            exit;
->>>>>>> Stashed changes
                 } catch (Exception $e) {
                         $conn->rollback();
                         echo '<div class="info-pill">Unable to delete book: ' . htmlspecialchars($e->getMessage()) . '</div>';
@@ -122,7 +117,7 @@ $ratings = $conn->query("SELECT Score FROM Rating WHERE BookID = $id");
                                 <button class="button-secondary" type="submit">Delete Book</button>
                         </form>
 
-                                                                        <!-- Covers are fetched automatically from Open Library when missing -->
+                        <!-- Covers are fetched automatically from Open Library when missing -->
 
                         <div>
                                 <h3>Ratings</h3>

@@ -17,7 +17,6 @@ include 'db.php';
             $title = trim($_POST['title']);
             $publisher = trim($_POST['publisher']);
             $description = trim($_POST['description']);
-<<<<<<< Updated upstream
             $author = trim($_POST['author']);
             $genre = trim($_POST['genre']);
             $cover_path = null;
@@ -49,12 +48,6 @@ include 'db.php';
                     }
                 }
             }
-
-=======
-            // No manual cover upload; we'll try to fetch a cover automatically after inserting the book
-            $coverPath = null;
-
->>>>>>> Stashed changes
             if ($title === '' || $author === '' || $genre === '') {
                 echo '<div class="info-pill">Please fill in all required fields.</div>';
             } else {
@@ -96,50 +89,16 @@ include 'db.php';
                 ");
                 $stmt->bind_param("sssiis", $title, $publisher, $description, $author_id, $genre_id, $cover_path);
 
-<<<<<<< Updated upstream
                 if ($stmt->execute()) {
                     echo '<div class="info-pill">Book added successfully. <a href="index.php">Return to library</a></div>';
                 } else {
                     echo '<div class="info-pill">Error adding book: ' . htmlspecialchars($conn->error) . '</div>';
-=======
-                    // If no cover was provided, try fetching from Open Library and update the book
-                    if (empty($coverPath)) {
-                        $bookId = $ins->insert_id;
-                        $url = "https://openlibrary.org/search.json?title=" . urlencode($title) . "&author=" . urlencode($author) . "&limit=1";
-                        $ctx = stream_context_create(['http' => ['timeout' => 5]]);
-                        $resp = @file_get_contents($url, false, $ctx);
-                        if ($resp) {
-                            $data = json_decode($resp, true);
-                            if (!empty($data['docs'][0])) {
-                                $doc = $data['docs'][0];
-                                if (!empty($doc['cover_i'])) {
-                                    $coverUrl = 'https://covers.openlibrary.org/b/id/' . intval($doc['cover_i']) . '-L.jpg';
-                                    $upd = $conn->prepare("UPDATE Book SET CoverImage = ? WHERE BookID = ?");
-                                    $upd->bind_param('si', $coverUrl, $bookId);
-                                    $upd->execute();
-                                } elseif (!empty($doc['isbn'][0])) {
-                                    $isbn = $doc['isbn'][0];
-                                    $coverUrl = 'https://covers.openlibrary.org/b/isbn/' . urlencode($isbn) . '-L.jpg';
-                                    $upd = $conn->prepare("UPDATE Book SET CoverImage = ? WHERE BookID = ?");
-                                    $upd->bind_param('si', $coverUrl, $bookId);
-                                    $upd->execute();
-                                }
-                            }
-                        }
-                    }
-
-                    $conn->commit();
-                    echo '<div class="info-pill">Book added successfully. <a href="index.php">Return to the library</a></div>';
-                } catch (Exception $e) {
-                    $conn->rollback();
-                    echo '<div class="info-pill">Error adding book: ' . htmlspecialchars($e->getMessage()) . '</div>';
->>>>>>> Stashed changes
                 }
             }
         }
         ?>
 
-        <form class="book-form" method="POST" action="add_book.php">
+        <form class="book-form" method="POST" action="add_book.php" enctype="multipart/form-data">
             <div class="form-field">
                 <label for="title">Title *</label>
                 <input class="form-control" id="title" type="text" name="title" required>
@@ -148,20 +107,6 @@ include 'db.php';
             <div class="form-field">
                 <label for="publisher">Publisher</label>
                 <input class="form-control" id="publisher" type="text" name="publisher">
-            </div>
-<<<<<<< Updated upstream
-
-            <div class="form-field">
-                <label for="cover">Cover Image</label>
-                <input class="form-control" id="cover" type="file" name="cover" accept="image/*">
-            </div>
-
-=======
-            <!-- Cover is fetched automatically from Open Library; no upload needed -->
->>>>>>> Stashed changes
-            <div class="form-field">
-                <label for="description">Description</label>
-                <textarea class="form-control" id="description" name="description"></textarea>
             </div>
 
             <div class="form-field">
@@ -174,12 +119,20 @@ include 'db.php';
                 <input class="form-control" id="genre" type="text" name="genre" required>
             </div>
 
+            <div class="form-field">
+                <label for="cover">Cover Image</label>
+                <input class="form-control" id="cover" type="file" name="cover" accept="image/*">
+            </div>
+
+            <div class="form-field">
+                <label for="description">Description</label>
+                <textarea class="form-control" id="description" name="description"></textarea>
+            </div>
+
             <button class="button-primary" type="submit">Add Book</button>
+
         </form>
     </div>
 </section>
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
 <?php include 'footer.php'; ?>
