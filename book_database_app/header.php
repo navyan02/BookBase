@@ -24,22 +24,21 @@ $pageTitle = $pageTitle ?? 'BookBase';
             </div>
             <nav class="main-nav">
                 <a href="index.php">Home</a>
-                <a href="search.php">Search</a>
                 <a href="add_rating.php">Add Rating</a>
                 <a href="add_book.php">Add Book</a>
             </nav>
         </header>
         <main class="container">
-        <?php
-        // Flash messages (stored in session) — displayed once
-        if (isset($_SESSION['flash'])) {
-            echo '<div class="flash">' . htmlspecialchars($_SESSION['flash']) . '</div>';
-            unset($_SESSION['flash']);
-        }
+            <?php
+            // Flash messages (stored in session) — displayed once
+            if (isset($_SESSION['flash'])) {
+                echo '<div class="flash">' . htmlspecialchars($_SESSION['flash']) . '</div>';
+                unset($_SESSION['flash']);
+            }
 
-        // Show last viewed book quick link if available
-        if (isset($_SESSION['last_book_viewed'])) {
-            $lastId = intval($_SESSION['last_book_viewed']);
-            echo '<p class="last-viewed">Last viewed: <a href="book.php?id=' . $lastId . '">View</a></p>';
-        }
-        ?>
+            // Show last viewed book quick link if available
+            if (isset($_SESSION['last_book_viewed'])) {
+                $lastId = intval($_SESSION['last_book_viewed']);
+                echo '<p class="last-viewed">Last viewed: <a href="book.php?id=' . $lastId . '">View</a></p>';
+            }
+            ?>

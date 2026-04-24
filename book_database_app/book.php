@@ -11,41 +11,36 @@ define('UPLOAD_DIR', __DIR__ . '/uploads/');
 define('UPLOAD_PATH', 'uploads/');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_book'])) {
-    $deleteId = intval($_POST['delete_book']);
-    if ($deleteId > 0) {
-        $stmt = $conn->prepare("SELECT CoverImage FROM Book WHERE BookID = ?");
-        $stmt->bind_param('i', $deleteId);
-        $stmt->execute();
-        $deleteResult = $stmt->get_result();
-        $deleteRow = $deleteResult->fetch_assoc();
+        $deleteId = intval($_POST['delete_book']);
+        if ($deleteId > 0) {
+                $stmt = $conn->prepare("SELECT CoverImage FROM Book WHERE BookID = ?");
+                $stmt->bind_param('i', $deleteId);
+                $stmt->execute();
+                $deleteResult = $stmt->get_result();
+                $deleteRow = $deleteResult->fetch_assoc();
 
-        $conn->begin_transaction();
-        try {
-            $delRatings = $conn->prepare("DELETE FROM Rating WHERE BookID = ?");
-            $delRatings->bind_param('i', $deleteId);
-            $delRatings->execute();
+                $conn->begin_transaction();
+                try {
+                        $delRatings = $conn->prepare("DELETE FROM Rating WHERE BookID = ?");
+                        $delRatings->bind_param('i', $deleteId);
+                        $delRatings->execute();
 
-            $delBook = $conn->prepare("DELETE FROM Book WHERE BookID = ?");
-            $delBook->bind_param('i', $deleteId);
-            $delBook->execute();
+                        $delBook = $conn->prepare("DELETE FROM Book WHERE BookID = ?");
+                        $delBook->bind_param('i', $deleteId);
+                        $delBook->execute();
 
-            $conn->commit();
+                        $conn->commit();
 
-            if (!empty($deleteRow['CoverImage'])) {
-                $coverFile = UPLOAD_DIR . basename($deleteRow['CoverImage']);
-                if (is_file($coverFile)) {
-                    @unlink($coverFile);
-                }
-            }
+                        if (!empty($deleteRow['CoverImage'])) {
+                                $coverFile = UPLOAD_DIR . basename($deleteRow['CoverImage']);
+                                if (is_file($coverFile)) {
+                                        @unlink($coverFile);
+                                }
+                        }
 
-            header('Location: index.php?deleted=1');
-            exit;
-        } catch (Exception $e) {
-            $conn->rollback();
-            echo '<div class="info-pill">Unable to delete book: ' . htmlspecialchars($e->getMessage()) . '</div>';
-        }
-    }
-}
+                        header('Location: index.php?deleted=1');
+                        exit;
+                } catch (Exception $e) {
                         $conn->rollback();
                         echo '<div class="info-pill">Unable to delete book: ' . htmlspecialchars($e->getMessage()) . '</div>';
                 }
