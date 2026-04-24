@@ -1,7 +1,9 @@
 <?php
+include 'header.php';
 include 'db.php';
 
-$id = $_GET['id'];
+$id = intval($_GET['id']);
+$_SESSION['last_book_viewed'] = $id;
 
 $query = "
 SELECT Book.Title, Book.Description, Author.Name AS Author, Genre.Name AS Genre

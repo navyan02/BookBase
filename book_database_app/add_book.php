@@ -9,7 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description = trim($_POST['description']);
 
     if ($title === '' || $author === '' || $genre === '') {
-        echo "<p>Please provide title, author, and genre.</p>";
+        $_SESSION['flash'] = 'Please provide title, author, and genre.';
+        header('Location: add_book.php');
+        exit;
     } else {
         // Use transaction: create/get author, create/get genre, insert book
         $conn->begin_transaction();
@@ -48,7 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ins->execute();
 
             $conn->commit();
-            echo "<p>Book added successfully. <a href=\"index.php\">Return to list</a></p>";
+            $_SESSION['flash'] = 'Book added successfully.';
+            header('Location: index.php');
+            exit;
         } catch (Exception $e) {
             $conn->rollback();
             echo "<p>Error adding book: " . htmlspecialchars($e->getMessage()) . "</p>";
