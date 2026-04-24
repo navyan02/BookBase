@@ -82,6 +82,25 @@ include 'db.php';
                     $genre_id = $stmt->insert_id;
                 }
 
+                // If no cover uploaded, try to fetch from Open Library now so it will be saved on insert
+                if (empty($cover_path)) {
+                    $url = "https://openlibrary.org/search.json?title=" . urlencode($title) . "&author=" . urlencode($author) . "&limit=1";
+                    $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+                    $resp = @file_get_contents($url, false, $ctx);
+                    if ($resp) {
+                        $data = json_decode($resp, true);
+                        if (!empty($data['docs'][0])) {
+                            $doc = $data['docs'][0];
+                            if (!empty($doc['cover_i'])) {
+                                $cover_path = 'https://covers.openlibrary.org/b/id/' . intval($doc['cover_i']) . '-L.jpg';
+                            } elseif (!empty($doc['isbn'][0])) {
+                                $isbn = $doc['isbn'][0];
+                                $cover_path = 'https://covers.openlibrary.org/b/isbn/' . urlencode($isbn) . '-L.jpg';
+                            }
+                        }
+                    }
+                }
+
                 // Insert Book
                 $stmt = $conn->prepare("
                     INSERT INTO Book (Title, Publisher, Description, AuthorID, GenreID, CoverImage)
@@ -90,7 +109,35 @@ include 'db.php';
                 $stmt->bind_param("sssiis", $title, $publisher, $description, $author_id, $genre_id, $cover_path);
 
                 if ($stmt->execute()) {
-                    echo '<div class="info-pill">Book added successfully. <a href="index.php">Return to library</a></div>';
+                    // If no cover was uploaded, try to fetch a cover from Open Library
+                    $bookId = $stmt->insert_id;
+                    if (empty($cover_path)) {
+                        $url = "https://openlibrary.org/search.json?title=" . urlencode($title) . "&author=" . urlencode($author) . "&limit=1";
+                        $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+                        $resp = @file_get_contents($url, false, $ctx);
+                        if ($resp) {
+                            $data = json_decode($resp, true);
+                            if (!empty($data['docs'][0])) {
+                                $doc = $data['docs'][0];
+                                if (!empty($doc['cover_i'])) {
+                                    $coverUrl = 'https://covers.openlibrary.org/b/id/' . intval($doc['cover_i']) . '-L.jpg';
+                                    $upd = $conn->prepare("UPDATE Book SET CoverImage = ? WHERE BookID = ?");
+                                    $upd->bind_param('si', $coverUrl, $bookId);
+                                    $upd->execute();
+                                } elseif (!empty($doc['isbn'][0])) {
+                                    $isbn = $doc['isbn'][0];
+                                    $coverUrl = 'https://covers.openlibrary.org/b/isbn/' . urlencode($isbn) . '-L.jpg';
+                                    $upd = $conn->prepare("UPDATE Book SET CoverImage = ? WHERE BookID = ?");
+                                    $upd->bind_param('si', $coverUrl, $bookId);
+                                    $upd->execute();
+                                }
+                            }
+                        }
+                    }
+
+                    // Redirect to the library so the new cover is visible on the homepage
+                    header('Location: index.php');
+                    exit;
                 } else {
                     echo '<div class="info-pill">Error adding book: ' . htmlspecialchars($conn->error) . '</div>';
                 }
