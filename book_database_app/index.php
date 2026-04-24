@@ -1,138 +1,61 @@
 <?php
+$pageTitle = 'BookHub';
+include 'header.php';
 include 'db.php';
-session_start();
 
-$search = "";
-$query = "
-SELECT Book.BookID, Book.Title, Book.Description, Author.Name AS Author
-FROM Book
-JOIN Author ON Book.AuthorID = Author.AuthorID
-";
+$search = trim($_GET['search'] ?? '');
+$query = "SELECT Book.BookID, Book.Title, Book.Description, Book.CoverImage, Author.Name AS Author FROM Book JOIN Author ON Book.AuthorID = Author.AuthorID";
 
-if (isset($_GET['search'])) {
-        $search = $_GET['search'];
-        $query .= " WHERE Book.Title LIKE '%$search%'";
+if ($search !== '') {
+        $query .= " WHERE Book.Title LIKE ?";
+        $stmt = $conn->prepare($query);
+        $like = "%{$search}%";
+        $stmt->bind_param('s', $like);
+        $stmt->execute();
+        $result = $stmt->get_result();
+} else {
+        $result = $conn->query($query);
 }
 
-$result = $conn->query($query);
+function getCoverUrl($title)
+{
+        $seed = preg_replace('/[^a-z0-9]+/i', '', strtolower($title));
+        return "https://picsum.photos/seed/{$seed}/420/540";
+}
 ?>
 
-<!DOCTYPE html>
-<html>
+<section class="page-hero">
+        <div class="hero-copy">
+                <span class="section-label">Discover new reads</span>
+                <h1>Find your next favorite story.</h1>
+                <p>Browse a fresh collection of books with vivid covers, playful details, and reading energy made for
+                        young book lovers.</p>
 
-<head>
-        <title>BookHub</title>
-
-        <style>
-                body {
-                        font-family: 'Segoe UI', sans-serif;
-                        background: #f4f6fb;
-                        margin: 0;
-                }
-
-                .navbar {
-                        background: #6c5ce7;
-                        padding: 15px;
-                        color: white;
-                        display: flex;
-                        justify-content: space-between;
-                }
-
-                .navbar a {
-                        color: white;
-                        margin: 0 10px;
-                        text-decoration: none;
-                        font-weight: bold;
-                }
-
-                .container {
-                        padding: 20px;
-                }
-
-                .search-box {
-                        margin-bottom: 20px;
-                }
-
-                input {
-                        padding: 10px;
-                        width: 250px;
-                        border-radius: 5px;
-                        border: 1px solid #ccc;
-                }
-
-                button {
-                        padding: 10px;
-                        background: #00b894;
-                        border: none;
-                        color: white;
-                        border-radius: 5px;
-                        cursor: pointer;
-                }
-
-                .grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                        gap: 20px;
-                }
-
-                .card {
-                        background: white;
-                        padding: 15px;
-                        border-radius: 12px;
-                        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-                        transition: 0.2s;
-                }
-
-                .card:hover {
-                        transform: scale(1.03);
-                }
-
-                .title {
-                        font-size: 18px;
-                        font-weight: bold;
-                }
-
-                .author {
-                        color: #636e72;
-                }
-        </style>
-</head>
-
-<body>
-
-        <div class="navbar">
-                <div>📚 BookHub</div>
-                <div>
-                        <a href="index.php">Home</a>
-                        <a href="index.php">Search</a>
-                        <a href="add_rating.php">Add Rating</a>
-                        <a href="add_book.php">Add Book</a>
-                </div>
-        </div>
-
-        <div class="container">
-
-                <form class="search-box">
-                        <input type="text" name="search" placeholder="Search books..." value="<?php echo $search; ?>">
-                        <button>Search</button>
+                <form class="search-form" method="GET" action="index.php">
+                        <input class="search-input" type="text" name="search" placeholder="Search by book title..."
+                                value="<?php echo htmlspecialchars($search); ?>">
+                        <button class="button-primary" type="submit">Search</button>
                 </form>
-
-                <div class="grid">
-                        <?php while ($row = $result->fetch_assoc()) { ?>
-                                <div class="card">
-                                        <div class="title">
-                                                <a href="book.php?id=<?php echo $row['BookID']; ?>">
-                                                        <?php echo $row['Title']; ?>
-                                                </a>
-                                        </div>
-                                        <div class="author">by <?php echo $row['Author']; ?></div>
-                                        <p><?php echo $row['Description']; ?></p>
-                                </div>
-                        <?php } ?>
-                </div>
-
         </div>
+</section>
 
-</body>
+<section class="book-grid">
+        <?php while ($row = $result->fetch_assoc()) { ?>
+                <article class="book-card">
+                        <div class="cover-frame">
+                                <?php $coverUrl = !empty($row['CoverImage']) ? $row['CoverImage'] : getCoverUrl($row['Title']); ?>
+                                <img class="cover-image" src="<?php echo htmlspecialchars($coverUrl); ?>"
+                                        alt="Cover for <?php echo htmlspecialchars($row['Title']); ?>">
+                        </div>
+                        <div class="book-copy">
+                                <h2 class="book-title"><a
+                                                href="book.php?id=<?php echo $row['BookID']; ?>"><?php echo htmlspecialchars($row['Title']); ?></a>
+                                </h2>
+                                <p class="book-author">by <?php echo htmlspecialchars($row['Author']); ?></p>
+                                <p class="book-description"><?php echo htmlspecialchars($row['Description']); ?></p>
+                        </div>
+                </article>
+        <?php } ?>
+</section>
 
-</html>
+<?php include 'footer.php'; ?>

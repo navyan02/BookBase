@@ -15,4 +15,12 @@ try {
     $msg .= "Or set environment variables: DB_HOST, DB_USER, DB_PASS, DB_NAME.\n";
     die(nl2br(htmlspecialchars($msg)));
 }
+
+$checkBook = $conn->query("SHOW TABLES LIKE 'Book'");
+if ($checkBook && $checkBook->num_rows > 0) {
+    $checkCover = $conn->query("SHOW COLUMNS FROM Book LIKE 'CoverImage'");
+    if ($checkCover && $checkCover->num_rows === 0) {
+        $conn->query("ALTER TABLE Book ADD COLUMN CoverImage VARCHAR(255) NULL");
+    }
+}
 ?>

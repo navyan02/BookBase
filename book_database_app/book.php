@@ -1,69 +1,110 @@
 <?php
+$pageTitle = 'Book Details';
 include 'header.php';
 include 'db.php';
 
-$id = intval($_GET['id']);
+$id = intval($_GET['id'] ?? 0);
 $_SESSION['last_book_viewed'] = $id;
 
-$query = "
-SELECT Book.Title, Book.Description, Author.Name AS Author, Genre.Name AS Genre
-FROM Book
-JOIN Author ON Book.AuthorID = Author.AuthorID
-JOIN Genre ON Book.GenreID = Genre.GenreID
-WHERE Book.BookID = $id
-";
+define('UPLOAD_DIR', __DIR__ . '/uploads/');
 
-$result = $conn->query($query);
+define('UPLOAD_PATH', 'uploads/');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_book'])) {
+    $deleteId = intval($_POST['delete_book']);
+    if ($deleteId > 0) {
+        $stmt = $conn->prepare("SELECT CoverImage FROM Book WHERE BookID = ?");
+        $stmt->bind_param('i', $deleteId);
+        $stmt->execute();
+        $deleteResult = $stmt->get_result();
+        $deleteRow = $deleteResult->fetch_assoc();
+
+        $conn->begin_transaction();
+        try {
+            $delRatings = $conn->prepare("DELETE FROM Rating WHERE BookID = ?");
+            $delRatings->bind_param('i', $deleteId);
+            $delRatings->execute();
+
+            $delBook = $conn->prepare("DELETE FROM Book WHERE BookID = ?");
+            $delBook->bind_param('i', $deleteId);
+            $delBook->execute();
+
+            $conn->commit();
+
+            if (!empty($deleteRow['CoverImage'])) {
+                $coverFile = UPLOAD_DIR . basename($deleteRow['CoverImage']);
+                if (is_file($coverFile)) {
+                    @unlink($coverFile);
+                }
+            }
+
+            header('Location: index.php?deleted=1');
+            exit;
+        } catch (Exception $e) {
+            $conn->rollback();
+            echo '<div class="info-pill">Unable to delete book: ' . htmlspecialchars($e->getMessage()) . '</div>';
+        }
+    }
+}
+                        $conn->rollback();
+                        echo '<div class="info-pill">Unable to delete book: ' . htmlspecialchars($e->getMessage()) . '</div>';
+                }
+        }
+}
+
+$query = "SELECT Book.Title, Book.Description, Book.CoverImage, Author.Name AS Author, Genre.Name AS Genre FROM Book JOIN Author ON Book.AuthorID = Author.AuthorID JOIN Genre ON Book.GenreID = Genre.GenreID WHERE Book.BookID = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param('i', $id);
+$stmt->execute();
+$result = $stmt->get_result();
 $row = $result->fetch_assoc();
 
-$ratings = $conn->query("SELECT * FROM Rating WHERE BookID = $id");
+function getCoverUrl($title)
+{
+        $seed = preg_replace('/[^a-z0-9]+/i', '', strtolower($title));
+        return "https://picsum.photos/seed/{$seed}/420/540";
+}
+
+if (!$row) {
+        echo '<section class="page-panel"><div class="form-card"><h2>Book not found</h2><p>Sorry, that book does not exist.</p></div></section>';
+        include 'footer.php';
+        exit;
+}
+
+$ratings = $conn->query("SELECT Score FROM Rating WHERE BookID = $id");
 ?>
 
-<!DOCTYPE html>
-<html>
+<section class="book-detail-page">
+        <div class="detail-card">
+                <div class="cover-frame">
+                        <?php $bookCover = !empty($row['CoverImage']) ? $row['CoverImage'] : getCoverUrl($row['Title']); ?>
+                        <img class="cover-image" src="<?php echo htmlspecialchars($bookCover); ?>"
+                                alt="Cover for <?php echo htmlspecialchars($row['Title']); ?>">
+                </div>
+                <div class="book-copy">
+                        <span class="section-label">Book Spotlight</span>
+                        <h2 class="book-title"><?php echo htmlspecialchars($row['Title']); ?></h2>
+                        <p class="book-author">by <?php echo htmlspecialchars($row['Author']); ?></p>
+                        <p><strong>Genre:</strong> <?php echo htmlspecialchars($row['Genre']); ?></p>
+                        <p class="book-description"><?php echo htmlspecialchars($row['Description']); ?></p>
+                        <form method="POST" action="book.php?id=<?php echo $id; ?>"
+                                onsubmit="return confirm('Delete this book? This action cannot be undone.');">
+                                <input type="hidden" name="delete_book" value="<?php echo $id; ?>">
+                                <button class="button-secondary" type="submit">Delete Book</button>
+                        </form>
 
-<head>
-        <style>
-                body {
-                        font-family: Arial;
-                        background: #f4f6fb;
-                        padding: 20px;
-                }
-
-                .card {
-                        background: white;
-                        padding: 20px;
-                        border-radius: 12px;
-                        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-                }
-
-                .star {
-                        color: gold;
-                }
-        </style>
-</head>
-
-<body>
-
-        <div class="card">
-                <h1><?php echo $row['Title']; ?></h1>
-                <p><b>Author:</b> <?php echo $row['Author']; ?></p>
-                <p><b>Genre:</b> <?php echo $row['Genre']; ?></p>
-                <p><?php echo $row['Description']; ?></p>
-
-                <h3>Ratings:</h3>
-
-                <?php while ($r = $ratings->fetch_assoc()) { ?>
                         <div>
-                                <?php
-                                for ($i = 0; $i < $r['Score']; $i++)
-                                        echo "⭐";
-                                ?>
+                                <h3>Ratings</h3>
+                                <?php if ($ratings->num_rows === 0) { ?>
+                                        <p class="rating-stars">No ratings yet. Be the first to rate it!</p>
+                                <?php } else {
+                                        while ($r = $ratings->fetch_assoc()) { ?>
+                                                <p class="rating-stars"><?php echo str_repeat('⭐', intval($r['Score'])); ?></p>
+                                        <?php }
+                                } ?>
                         </div>
-                <?php } ?>
-
+                </div>
         </div>
+</section>
 
-</body>
-
-</html>
+<?php include 'footer.php'; ?>

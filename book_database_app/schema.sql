@@ -21,6 +21,7 @@ CREATE TABLE Book (
     Title VARCHAR(200),
     Publisher VARCHAR(100),
     Description TEXT,
+    CoverImage VARCHAR(255),
     AuthorID INT,
     GenreID INT,
     FOREIGN KEY (AuthorID) REFERENCES Author(AuthorID),
@@ -52,14 +53,14 @@ INSERT INTO Genre VALUES
 
 -- Insert Books
 INSERT INTO Book VALUES
-(1, 'Harry Potter', 'Bloomsbury', 'Wizard story about a young boy discovering magic.', 1, 1),
-(2, '1984', 'Secker & Warburg', 'A dystopian society under constant surveillance.', 2, 2),
-(3, 'Lord of the Rings', 'Allen & Unwin', 'An epic journey to destroy the One Ring.', 3, 3),
-(4, 'Da Vinci Code', 'Doubleday', 'A mystery thriller involving hidden religious secrets.', 4, 4),
-(5, 'It Ends With Us', 'Atria Books', 'A romance novel dealing with complex relationships.', 5, 5),
-(6, 'Animal Farm', 'Secker & Warburg', 'A political satire using farm animals.', 2, 2),
-(7, 'The Hobbit', 'Allen & Unwin', 'A fantasy adventure of Bilbo Baggins.', 3, 1),
-(8, 'Inferno', 'Doubleday', 'A fast-paced thriller set in Europe.', 4, 4);
+(1, 'Harry Potter', 'Bloomsbury', 'Wizard story about a young boy discovering magic.', NULL, 1, 1),
+(2, '1984', 'Secker & Warburg', 'A dystopian society under constant surveillance.', NULL, 2, 2),
+(3, 'Lord of the Rings', 'Allen & Unwin', 'An epic journey to destroy the One Ring.', NULL, 3, 3),
+(4, 'Da Vinci Code', 'Doubleday', 'A mystery thriller involving hidden religious secrets.', NULL, 4, 4),
+(5, 'It Ends With Us', 'Atria Books', 'A romance novel dealing with complex relationships.', NULL, 5, 5),
+(6, 'Animal Farm', 'Secker & Warburg', 'A political satire using farm animals.', NULL, 2, 2),
+(7, 'The Hobbit', 'Allen & Unwin', 'A fantasy adventure of Bilbo Baggins.', NULL, 3, 1),
+(8, 'Inferno', 'Doubleday', 'A fast-paced thriller set in Europe.', NULL, 4, 4);
 
 -- Insert Ratings
 INSERT INTO Rating (Score, BookID) VALUES
