@@ -99,6 +99,7 @@ $ratings = $conn->query("SELECT Score FROM Rating WHERE BookID = $id");
 ?>
 
 <section class="book-detail-page">
+        <span class="section-label">Book Spotlight</span>
         <div class="detail-card">
                 <div class="cover-frame">
                         <?php $bookCover = !empty($row['CoverImage']) ? $row['CoverImage'] : getCoverUrl($row['Title']); ?>
@@ -106,7 +107,6 @@ $ratings = $conn->query("SELECT Score FROM Rating WHERE BookID = $id");
                                 alt="Cover for <?php echo htmlspecialchars($row['Title']); ?>">
                 </div>
                 <div class="book-copy">
-                        <span class="section-label">Book Spotlight</span>
                         <h2 class="book-title"><?php echo htmlspecialchars($row['Title']); ?></h2>
                         <p class="book-author">by <?php echo htmlspecialchars($row['Author']); ?></p>
                         <p><strong>Genre:</strong> <?php echo htmlspecialchars($row['Genre']); ?></p>
