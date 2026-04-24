@@ -12,5 +12,6 @@
         <a href="index.php">Home</a>
         <a href="search.php">Search</a>
         <a href="add_rating.php">Add Rating</a>
+        <a href="add_book.php">Add Book</a>
     </nav>
     <hr>
