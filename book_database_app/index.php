@@ -28,8 +28,7 @@ function getCoverUrl($title)
         <div class="hero-copy">
                 <span class="section-label">Discover new reads</span>
                 <h1>Find your next favorite story.</h1>
-                <p>Browse a fresh collection of books with vivid covers, playful details, and reading energy made for
-                        young book lovers.</p>
+                <p>Browse a fresh collection of books. Share your thoughts or find your next read.</p>
 
                 <form class="search-form" method="GET" action="index.php">
                         <input class="search-input" type="text" name="search" placeholder="Search by book title..."

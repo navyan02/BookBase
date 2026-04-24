@@ -36,9 +36,5 @@ $pageTitle = $pageTitle ?? 'BookBase';
                 unset($_SESSION['flash']);
             }
 
-            // Show last viewed book quick link if available
-            if (isset($_SESSION['last_book_viewed'])) {
-                $lastId = intval($_SESSION['last_book_viewed']);
-                echo '<p class="last-viewed">Last viewed: <a href="book.php?id=' . $lastId . '">View</a></p>';
-            }
+
             ?>
