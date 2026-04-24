@@ -57,4 +57,10 @@ function getCoverUrl($title)
         <?php } ?>
 </section>
 
+<?php if (isset($_SESSION['last_book_viewed']) && intval($_SESSION['last_book_viewed']) > 0) { ?>
+                <div class="bottom-action">
+                        <a class="button-secondary small-button" href="book.php?id=<?php echo intval($_SESSION['last_book_viewed']); ?>">Last viewed</a>
+                </div>
+<?php } ?>
+
 <?php include 'footer.php'; ?>

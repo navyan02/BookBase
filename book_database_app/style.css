@@ -95,7 +95,16 @@ body {
     padding: 20px 0 40px;
 }
 .page-hero .hero-copy {
+    display: grid;
+    gap: 18px;
     max-width: 720px;
+}
+.hero-copy .small-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 8px;
+    margin-bottom: 8px;
 }
 .section-label {
     display: block;
@@ -156,6 +165,14 @@ body {
     cursor: pointer;
     font-weight: 700;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.small-button {
+    padding: 8px 18px;
+    font-size: 0.95rem;
+}
+.bottom-action {
+    margin-top: 24px;
+    text-align: center;
 }
 .search-form button,
 .button-primary {
