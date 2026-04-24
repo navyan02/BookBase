@@ -7,16 +7,12 @@ $dbname = getenv('DB_NAME') ?: 'book_database';
 
 // Attempt connection and handle errors with helpful message
 try {
-    $conn = new mysqli($host, $user, $pass, $dbname);
+    $conn = new mysqli("localhost", "root", "Roundpanda", "bookdb");
 } catch (mysqli_sql_exception $e) {
     // Friendly error with actionable next steps
     $msg = "Database connection failed: " . $e->getMessage() . "\n";
     $msg .= "Check your DB credentials and/or run './start_local.sh' to set up a local DB.\n";
     $msg .= "Or set environment variables: DB_HOST, DB_USER, DB_PASS, DB_NAME.\n";
     die(nl2br(htmlspecialchars($msg)));
-}
-
-if ($conn->connect_error) {
-    die("Database connection failed: " . $conn->connect_error);
 }
 ?>

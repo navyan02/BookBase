@@ -4,6 +4,12 @@ nav a { margin-right: 15px; text-decoration: none; color: #1a4f8b; font-weight: 
 table { width: 100%; border-collapse: collapse; margin-top: 15px; }
 th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
 th { background: #e8eef7; }
-input, select, button { padding: 8px; margin: 6px 0; }
-button { background: #1a4f8b; color: white; border: none; border-radius: 4px; cursor: pointer; }
+input, select, textarea, button { padding: 8px; margin: 6px 0; font-family: Arial, sans-serif; }
+input, select, textarea { border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+textarea { resize: vertical; min-height: 100px; }
+button { background: #1a4f8b; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+button:hover { background: #0f3566; }
+label { display: block; margin-top: 10px; margin-bottom: 5px; font-weight: bold; color: #1a4f8b; }
+form { max-width: 600px; }
 .card { background: #f8f8f8; padding: 15px; border-radius: 6px; margin-top: 15px; }
+p { line-height: 1.6; }

@@ -1,41 +1,67 @@
-<?php include 'header.php'; include 'db.php'; ?>
 <?php
-if (!isset($_GET['id'])) { die("No book selected."); }
-$bookID = intval($_GET['id']);
-$_SESSION['last_book_viewed'] = $bookID;
+include 'db.php';
 
-$sql = "SELECT Book.Title, Book.Publisher, Book.Description, Author.Name AS AuthorName, Genre.Name AS GenreName
-        FROM Book
-        JOIN Author ON Book.AuthorID = Author.AuthorID
-        JOIN Genre ON Book.GenreID = Genre.GenreID
-        WHERE Book.BookID = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $bookID);
-$stmt->execute();
-$book = $stmt->get_result()->fetch_assoc();
+$id = $_GET['id'];
 
-if (!$book) { die("Book not found."); }
+$query = "
+SELECT Book.Title, Book.Description, Author.Name AS Author, Genre.Name AS Genre
+FROM Book
+JOIN Author ON Book.AuthorID = Author.AuthorID
+JOIN Genre ON Book.GenreID = Genre.GenreID
+WHERE Book.BookID = $id
+";
+
+$result = $conn->query($query);
+$row = $result->fetch_assoc();
+
+$ratings = $conn->query("SELECT * FROM Rating WHERE BookID = $id");
 ?>
-<h2><?= htmlspecialchars($book['Title']) ?></h2>
-<div class="card">
-<p><strong>Author:</strong> <?= htmlspecialchars($book['AuthorName']) ?></p>
-<p><strong>Genre:</strong> <?= htmlspecialchars($book['GenreName']) ?></p>
-<p><strong>Publisher:</strong> <?= htmlspecialchars($book['Publisher']) ?></p>
-<p><strong>Description:</strong> <?= htmlspecialchars($book['Description']) ?></p>
-</div>
 
-<h3>Ratings</h3>
-<?php
-$ratingSql = "SELECT Score FROM Rating WHERE BookID = ?";
-$ratingStmt = $conn->prepare($ratingSql);
-$ratingStmt->bind_param("i", $bookID);
-$ratingStmt->execute();
-$ratings = $ratingStmt->get_result();
-?>
-<ul>
-<?php while($r = $ratings->fetch_assoc()): ?>
-<li><?= htmlspecialchars($r['Score']) ?>/5</li>
-<?php endwhile; ?>
-</ul>
-<p><a href="add_rating.php?book_id=<?= $bookID ?>">Add a rating for this book</a></p>
-<?php include 'footer.php'; ?>
+<!DOCTYPE html>
+<html>
+
+<head>
+        <style>
+                body {
+                        font-family: Arial;
+                        background: #f4f6fb;
+                        padding: 20px;
+                }
+
+                .card {
+                        background: white;
+                        padding: 20px;
+                        border-radius: 12px;
+                        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                }
+
+                .star {
+                        color: gold;
+                }
+        </style>
+</head>
+
+<body>
+
+        <div class="card">
+                <h1><?php echo $row['Title']; ?></h1>
+                <p><b>Author:</b> <?php echo $row['Author']; ?></p>
+                <p><b>Genre:</b> <?php echo $row['Genre']; ?></p>
+                <p><?php echo $row['Description']; ?></p>
+
+                <h3>Ratings:</h3>
+
+                <?php while ($r = $ratings->fetch_assoc()) { ?>
+                        <div>
+                                <?php
+                                for ($i = 0; $i < $r['Score']; $i++)
+                                        echo "⭐";
+                                ?>
+                        </div>
+                <?php } ?>
+
+        </div>
+
+</body>
+
+</html>
