@@ -10,6 +10,8 @@ define('UPLOAD_DIR', __DIR__ . '/uploads/');
 
 define('UPLOAD_PATH', 'uploads/');
 
+// Cover images are fetched automatically (no manual update form)
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_book'])) {
         $deleteId = intval($_POST['delete_book']);
         if ($deleteId > 0) {
@@ -38,8 +40,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_book'])) {
                                 }
                         }
 
+<<<<<<< Updated upstream
                         header('Location: index.php?deleted=1');
                         exit;
+=======
+            header('Location: index.php?deleted=1');
+            exit;
+>>>>>>> Stashed changes
                 } catch (Exception $e) {
                         $conn->rollback();
                         echo '<div class="info-pill">Unable to delete book: ' . htmlspecialchars($e->getMessage()) . '</div>';
@@ -53,6 +60,33 @@ $stmt->bind_param('i', $id);
 $stmt->execute();
 $result = $stmt->get_result();
 $row = $result->fetch_assoc();
+
+// If there's no cover set, try to look up on Open Library and persist it so everyone sees it
+if ($row && empty($row['CoverImage'])) {
+        $queryUrl = "https://openlibrary.org/search.json?title=" . urlencode($row['Title']) . "&author=" . urlencode($row['Author']) . "&limit=1";
+        $ctx = stream_context_create(['http' => ['timeout' => 5]]);
+        $resp = @file_get_contents($queryUrl, false, $ctx);
+        if ($resp) {
+                $data = json_decode($resp, true);
+                if (!empty($data['docs'][0])) {
+                        $doc = $data['docs'][0];
+                        if (!empty($doc['cover_i'])) {
+                                $coverUrl = 'https://covers.openlibrary.org/b/id/' . intval($doc['cover_i']) . '-L.jpg';
+                                $upd = $conn->prepare("UPDATE Book SET CoverImage = ? WHERE BookID = ?");
+                                $upd->bind_param('si', $coverUrl, $id);
+                                $upd->execute();
+                                $row['CoverImage'] = $coverUrl;
+                        } elseif (!empty($doc['isbn'][0])) {
+                                $isbn = $doc['isbn'][0];
+                                $coverUrl = 'https://covers.openlibrary.org/b/isbn/' . urlencode($isbn) . '-L.jpg';
+                                $upd = $conn->prepare("UPDATE Book SET CoverImage = ? WHERE BookID = ?");
+                                $upd->bind_param('si', $coverUrl, $id);
+                                $upd->execute();
+                                $row['CoverImage'] = $coverUrl;
+                        }
+                }
+        }
+}
 
 function getCoverUrl($title)
 {
@@ -87,6 +121,8 @@ $ratings = $conn->query("SELECT Score FROM Rating WHERE BookID = $id");
                                 <input type="hidden" name="delete_book" value="<?php echo $id; ?>">
                                 <button class="button-secondary" type="submit">Delete Book</button>
                         </form>
+
+                                                                        <!-- Covers are fetched automatically from Open Library when missing -->
 
                         <div>
                                 <h3>Ratings</h3>
