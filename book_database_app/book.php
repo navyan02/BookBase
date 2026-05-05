@@ -95,7 +95,18 @@ if (!$row) {
         exit;
 }
 
+$ratingResult = $conn->query("SELECT COUNT(*) AS count, AVG(Score) AS avg_rating FROM Rating WHERE BookID = $id");
+$ratingRow = $ratingResult ? $ratingResult->fetch_assoc() : null;
+$ratingCount = $ratingRow ? intval($ratingRow['count']) : 0;
+$averageRating = $ratingRow && $ratingRow['avg_rating'] !== null ? floatval($ratingRow['avg_rating']) : 0;
+
 $ratings = $conn->query("SELECT Score FROM Rating WHERE BookID = $id");
+
+function renderStars($rating)
+{
+        $filledStars = max(0, min(5, intval(round($rating))));
+        return str_repeat('⭐', $filledStars);
+}
 ?>
 
 <section class="book-detail-page">
@@ -121,13 +132,17 @@ $ratings = $conn->query("SELECT Score FROM Rating WHERE BookID = $id");
 
                         <div>
                                 <h3>Ratings</h3>
-                                <?php if ($ratings->num_rows === 0) { ?>
+                                <?php if ($ratingCount === 0) { ?>
                                         <p class="rating-stars">No ratings yet. Be the first to rate it!</p>
                                 <?php } else {
                                         while ($r = $ratings->fetch_assoc()) { ?>
                                                 <p class="rating-stars"><?php echo str_repeat('⭐', intval($r['Score'])); ?></p>
                                         <?php }
                                 } ?>
+                                <?php if ($ratingCount > 0) { ?>
+                                        <p>Average rating: <?php echo number_format($averageRating, 1); ?> / 5
+                                                (<?php echo $ratingCount; ?> ratings)</p>
+                                <?php } ?>
                         </div>
                 </div>
         </div>

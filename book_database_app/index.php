@@ -4,7 +4,8 @@ include 'header.php';
 include 'db.php';
 
 $search = trim($_GET['search'] ?? '');
-$query = "SELECT Book.BookID, Book.Title, Book.Description, Book.CoverImage, Author.Name AS Author FROM Book JOIN Author ON Book.AuthorID = Author.AuthorID";
+$query = "SELECT Book.BookID, Book.Title, Book.Description, Book.CoverImage, Author.Name 
+                AS Author FROM Book JOIN Author ON Book.AuthorID = Author.AuthorID";
 
 if ($search !== '') {
         $query .= " WHERE Book.Title LIKE ?";
@@ -58,9 +59,10 @@ function getCoverUrl($title)
 </section>
 
 <?php if (isset($_SESSION['last_book_viewed']) && intval($_SESSION['last_book_viewed']) > 0) { ?>
-                <div class="bottom-action">
-                        <a class="button-secondary small-button" href="book.php?id=<?php echo intval($_SESSION['last_book_viewed']); ?>">Last viewed</a>
-                </div>
+        <div class="bottom-action">
+                <a class="button-secondary small-button"
+                        href="book.php?id=<?php echo intval($_SESSION['last_book_viewed']); ?>">Last viewed</a>
+        </div>
 <?php } ?>
 
 <?php include 'footer.php'; ?>
